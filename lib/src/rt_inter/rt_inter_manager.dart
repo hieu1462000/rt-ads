@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:rt_ads_plugin/rt_ads_plugin.dart';
 import 'package:rt_ads_plugin/src/rt_inter/rt_inter_loading.dart';
@@ -13,6 +12,7 @@ class RTInterManager {
   InterstitialAd? _interstitialAd;
 
   Future<void> loadInterstitialAd({
+    required BuildContext context,
     required String adUnitId,
     Function(InterstitialAd ad)? onAdLoaded,
     Function(LoadAdError error)? onAdFailedToLoad,
@@ -38,13 +38,9 @@ class RTInterManager {
         },
         onAdFailedToLoad: (LoadAdError error) {
           RTLog.e('Inter ad failed to load: ${error.message}');
+          _backLoadingDialog(context);
+          onAdFailedToLoad?.call(error);
           _interstitialAd = null;
-          if (onAdFailedToLoad != null) onAdFailedToLoad(error);
-          if (Get.isDialogOpen == true) {
-            Future.delayed(const Duration(milliseconds: 500), () async {
-              Get.back();
-            });
-          }
         },
       ),
     );

@@ -69,11 +69,13 @@ class RTAppManagement {
   }
 
   Future<void> loadInterstitialAd({
+    required BuildContext context,
     required String adUnitId,
     Function(InterstitialAd ad)? onAdLoaded,
     Function(LoadAdError error)? onAdFailedToLoad,
   }) async {
     await RTInterManager.instance.loadInterstitialAd(
+      context: context,
       adUnitId: adUnitId,
       onAdLoaded: onAdLoaded,
       onAdFailedToLoad: onAdFailedToLoad,

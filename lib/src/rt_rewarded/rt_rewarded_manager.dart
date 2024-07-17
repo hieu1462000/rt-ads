@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:rt_ads_plugin/rt_ads_plugin.dart';
 import 'package:rt_ads_plugin/src/rt_log/rt_log.dart';
@@ -190,11 +189,7 @@ class RTRewardedManager {
             },
           );
           //close dialog
-          if (Get.isDialogOpen == true) {
-            Future.delayed(const Duration(milliseconds: 500), () async {
-              Get.back();
-            });
-          }
+          _backLoadingDialog(context);
           _rewardedAd!.show(onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
             RTLog.d('RewardedAd onUserEarnedReward');
             onUserEarnedReward?.call(ad, reward);

@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:focus_detector_v2/focus_detector_v2.dart';
-import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:rt_ads_plugin/rt_ads_plugin.dart';
 import 'package:rt_ads_plugin/src/rt_banner/rt_banner_loading.dart';
@@ -116,10 +116,11 @@ class _RTBannerCollapseViewState extends State<RTBannerCollapseView> {
   }
 
   void _loadBannerAd() async {
+    double width = MediaQuery.sizeOf(context).width;
     _bannerAd = BannerAd(
       adUnitId: widget.adUnitId,
       request: AdRequest(extras: {"collapsible": "bottom"}, httpTimeoutMillis: widget.timeOutInseconds * 1000),
-      size: AdSize(width: Get.width.toInt(), height: 60),
+      size: AdSize(width: width.toInt(), height: 60),
       listener: BannerAdListener(
         onAdLoaded: (ad) {
           log('ads banner collapse loaded');
@@ -258,10 +259,14 @@ class RTBannerCollapseAdController extends ChangeNotifier {
   BannerAd? _bannerAd;
 
   void preLoadAd() {
+    FlutterView view = WidgetsBinding.instance.platformDispatcher.views.first;
+
+    Size size = view.physicalSize;
+    double width = size.width;
     _bannerAd = BannerAd(
       adUnitId: _adUnitId,
       request: const AdRequest(httpTimeoutMillis: 30000),
-      size: AdSize(width: Get.width.toInt(), height: 60),
+      size: AdSize(width: width.toInt(), height: 60),
       listener: BannerAdListener(
         onAdLoaded: (ad) {
           log('ads banner collapse preloaded');

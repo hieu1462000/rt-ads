@@ -1,9 +1,8 @@
 name: rt_ads_plugin
 description: "A new Flutter plugin project."
-publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 version: 0.0.1
-homepage:
+homepage: https://github.com/hieu1462000/rt-ads
 
 environment:
   sdk: '>=3.3.1 <4.0.0'
@@ -15,9 +14,7 @@ dependencies:
   plugin_platform_interface: ^2.0.2
   google_mobile_ads: ^5.1.0
   shimmer: ^3.0.0
-  get: 4.6.6
-  focus_detector_v2:
-    git: https://github.com/ifnyas/focus_detector.git
+  focus_detector_v2: ^3.1.0+1
   connectivity_plus: ^6.0.3
   
 dev_dependencies:
