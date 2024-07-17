@@ -100,7 +100,7 @@ public class RTNativeBig implements GoogleMobileAdsPlugin.NativeAdFactory {
         }
 
         if (nativeAd.getIcon() == null) {
-            adView.getIconView().setVisibility(View.GONE);
+            adView.getIconView().setVisibility(View.INVISIBLE);
         } else {
             ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
             adView.getIconView().setVisibility(View.VISIBLE);
@@ -108,7 +108,7 @@ public class RTNativeBig implements GoogleMobileAdsPlugin.NativeAdFactory {
 
         if (adView.getAdvertiserView() != null) {
             if (nativeAd.getAdvertiser() == null) {
-                adView.getAdvertiserView().setVisibility(View.GONE);
+                adView.getAdvertiserView().setVisibility(View.INVISIBLE);
             } else {
                 ((TextView) adView.getAdvertiserView()).setText(nativeAd.getAdvertiser());
                 adView.getAdvertiserView().setVisibility(View.VISIBLE);
