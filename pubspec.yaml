@@ -2,7 +2,7 @@ name: rt_ads_plugin
 description: "A custom google_mobile_ads package designed to be user-friendly and optimized for better performance. 
 Developed and maintained by RAWTECH, this package provides seamless integration and enhanced ad functionalities for your Flutter applications."
 
-version: 0.0.1
+version: 1.0.1
 homepage: https://github.com/hieu1462000/rt-ads
 
 environment:
