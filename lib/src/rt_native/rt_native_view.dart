@@ -93,8 +93,10 @@ class _RTNativeViewState extends State<RTNativeView> {
 
     return FocusDetector(
       onFocusGained: () {
-        RTLog.d("onFocusGained");
-        if (widget.isReload && isInit == false && canRequestAds) {
+        // tôi muốn chỉ bắt sự kiện chuyển màn hình và thoát app vào lại
+        // để load lại ads
+
+        if (widget.isReload && isInit == false && canRequestAds && RTAppManagement.instance.isLastNavigator == true) {
           key = UniqueKey();
           _loadAds(true);
         } else {
