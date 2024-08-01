@@ -22,6 +22,7 @@ class RTAppManagement {
 
   RTNativeStyle _rtNativeStyle = rtNativeStyleDefault;
   RTAdColor _rtAdColor = rtAdColorDefault;
+  DateTime? _lastNavigator;
 
   bool get isEnableResume => _isEnableResume;
   RTNativeStyle get rtNativeStyle => _rtNativeStyle;
@@ -29,6 +30,12 @@ class RTAppManagement {
   int get countResumeAdsInter => _countResumeAdsInter;
   bool get isActiveResumeAdsInter => DateTime.now().difference(_lastTimeShowAdsInter).inSeconds > _countResumeAdsInter;
   bool get reloadBannerPeriod => _isReloadBannerPeriod;
+
+  void setLastNavigator() {
+    _lastNavigator = DateTime.now();
+  }
+
+  bool get isLastNavigator => _lastNavigator != null && DateTime.now().difference(_lastNavigator!).inMilliseconds <= 1000;
 
   void setNativeStyle(RTNativeStyle style) {
     _rtNativeStyle = style;
