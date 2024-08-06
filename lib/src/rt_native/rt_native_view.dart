@@ -211,7 +211,9 @@ class _RTNativeViewState extends State<RTNativeView> {
         });
       }
     } else {
-      _loadAds(false);
+      if (mounted) {
+        _loadAds(false);
+      }
     }
   }
 }
