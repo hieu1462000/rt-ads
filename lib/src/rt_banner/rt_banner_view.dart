@@ -99,7 +99,9 @@ class _RTBannerViewState extends State<RTBannerView> {
     if (canRequestAds) {
       if (widget.controller != null) {
         if (!widget.controller!.isPreloadDone) {
-          _loadBannerAd();
+          if (mounted) {
+            _loadBannerAd();
+          }
         }
         widget.controller!.addListener(() {
           // Reload ads
@@ -123,7 +125,9 @@ class _RTBannerViewState extends State<RTBannerView> {
           }
         });
       } else {
-        _loadBannerAd();
+        if (mounted) {
+          _loadBannerAd();
+        }
       }
     } else {
       setState(() {
@@ -198,52 +202,55 @@ class _RTBannerViewState extends State<RTBannerView> {
 
   @override
   Widget build(BuildContext context) {
-    return FocusDetector(
-      onVisibilityGained: () {
-        if (widget.isReloadNavigate && !_isTimeOut) {
-          reLoad();
-        }
-      },
-      onVisibilityLost: () {
-        timer?.cancel();
-      },
-      onFocusLost: () {
-        timer?.cancel();
-      },
-      onForegroundGained: () {
-        if (!_isTimeOut) {
-          reLoad();
-        }
-      },
-      onForegroundLost: () {
-        timer?.cancel();
-      },
-      child: !_isTimeOut
-          ? Column(
-              children: [
-                Container(
-                  color: Colors.black38,
-                  height: 1,
-                ),
-                _isBannerAdReady
-                    ? Container(
-                        width: MediaQuery.of(context).size.width,
-                        height: 60,
-                        alignment: Alignment.bottomCenter,
-                        child: AdWidget(key: key, ad: _bannerAd!),
-                      )
-                    : const RTBannerLoading(),
-                Container(
-                  color: Colors.black38,
-                  height: 1,
-                ),
-              ],
-            )
-          : const SizedBox(),
-    );
+    return widget.isActive
+        ? FocusDetector(
+            onVisibilityGained: () {
+              if (widget.isReloadNavigate && !_isTimeOut) {
+                reLoad();
+              }
+            },
+            onVisibilityLost: () {
+              timer?.cancel();
+            },
+            onFocusLost: () {
+              timer?.cancel();
+            },
+            onForegroundGained: () {
+              if (!_isTimeOut) {
+                reLoad();
+              }
+            },
+            onForegroundLost: () {
+              timer?.cancel();
+            },
+            child: !_isTimeOut
+                ? Column(
+                    children: [
+                      Container(
+                        color: Colors.black38,
+                        height: 1,
+                      ),
+                      _isBannerAdReady
+                          ? Container(
+                              width: MediaQuery.of(context).size.width,
+                              height: 60,
+                              alignment: Alignment.bottomCenter,
+                              child: AdWidget(key: key, ad: _bannerAd!),
+                            )
+                          : const RTBannerLoading(),
+                      Container(
+                        color: Colors.black38,
+                        height: 1,
+                      ),
+                    ],
+                  )
+                : const SizedBox(),
+          )
+        : const SizedBox();
   }
 
   reLoad() {
+    RTLog.d("Banner reload");
     key = UniqueKey();
     _isBannerAdReady = false;
     _isTimeOut = false;
