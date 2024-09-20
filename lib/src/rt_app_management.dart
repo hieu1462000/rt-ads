@@ -142,7 +142,7 @@ class RTAppManagement {
       onAdFailedToLoad: onAdFailedToLoad,
       onAdDismissedFullScreenContent: onAdDismissedFullScreenContent,
       onAdFailedToShowFullScreenContent: onAdFailedToShowFullScreenContent,
-      onAdShowedFullScreenContent: onAdShowedFullScreenContent,
+      //onAdShowedFullScreenContent: onAdShowedFullScreenContent,
       onAdClicked: onAdClicked,
       onAdImpression: onAdImpression,
       onAdWillDismissFullScreenContent: onAdWillDismissFullScreenContent,

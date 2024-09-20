@@ -205,6 +205,7 @@ class _RTBannerViewState extends State<RTBannerView> {
     return widget.isActive
         ? FocusDetector(
             onVisibilityGained: () {
+              RTLog.d("vo visibility");
               if (widget.isReloadNavigate && !_isTimeOut) {
                 reLoad();
               }
@@ -216,8 +217,10 @@ class _RTBannerViewState extends State<RTBannerView> {
               timer?.cancel();
             },
             onForegroundGained: () {
+              RTLog.d("vo day tu ngoai app vao ne");
               if (!_isTimeOut) {
                 reLoad();
+                RTLog.d("vo 2 ngoai app vao ne");
               }
             },
             onForegroundLost: () {
@@ -250,9 +253,13 @@ class _RTBannerViewState extends State<RTBannerView> {
   }
 
   reLoad() {
-    RTLog.d("Banner reload");
+    RTLog.d("Banner reload : $_isTimeOut");
     key = UniqueKey();
-    _isBannerAdReady = false;
+
+    if (mounted) {
+      _isBannerAdReady = false;
+      setState(() {});
+    }
     _isTimeOut = false;
 
     _bannerAd?.dispose();
