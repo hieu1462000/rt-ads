@@ -116,7 +116,7 @@ class RTInterManager {
     Function(InterstitialAd ad)? onAdLoaded,
     Function(InterstitialAd ad)? onAdDismissedFullScreenContent,
     Function(InterstitialAd ad, AdError error)? onAdFailedToShowFullScreenContent,
-    Function(InterstitialAd ad)? onAdShowedFullScreenContent,
+    //Function(InterstitialAd ad)? onAdShowedFullScreenContent,
     Function()? onAdFailedToLoad,
     Function(InterstitialAd ad)? onAdClicked,
     Function(InterstitialAd ad)? onAdImpression,
@@ -158,7 +158,8 @@ class RTInterManager {
           _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
             onAdShowedFullScreenContent: (InterstitialAd ad) {
               _backLoadingDialog(context);
-              onAdDismissedFullScreenContent?.call(ad);
+              onAdDismissedFullScreenContent?.call(
+                  ad); //chạy luôn dòng này ở đây thì nó sẽ ko bị nháy lúc tắt ad inter vì khi ad được show lên thì vẫn sẽ chạy app ở dưới (ví dụ: chuyển màn)
               RTLog.d('InterstitialAd showed');
               RTAppManagement.instance.disableResume();
             },
