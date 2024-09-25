@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:rt_ads_plugin/rt_ads_plugin.dart';
+import 'package:rt_ads_plugin/src/rt_app_management.dart';
 import 'package:rt_ads_plugin/src/rt_inter/rt_inter_loading.dart';
 import 'package:rt_ads_plugin/src/rt_log/rt_log.dart';
 
@@ -116,7 +117,7 @@ class RTInterManager {
     Function(InterstitialAd ad)? onAdLoaded,
     Function(InterstitialAd ad)? onAdDismissedFullScreenContent,
     Function(InterstitialAd ad, AdError error)? onAdFailedToShowFullScreenContent,
-    //Function(InterstitialAd ad)? onAdShowedFullScreenContent,
+    Function(InterstitialAd ad)? onAdShowedFullScreenContent,
     Function()? onAdFailedToLoad,
     Function(InterstitialAd ad)? onAdClicked,
     Function(InterstitialAd ad)? onAdImpression,
@@ -135,6 +136,7 @@ class RTInterManager {
       onAdFailedToLoad?.call();
       return;
     }
+    RTAppManagement.instance.disableResume();
     showDialog(
       context: context,
       builder: (context) => WillPopScope(
@@ -158,13 +160,13 @@ class RTInterManager {
           _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
             onAdShowedFullScreenContent: (InterstitialAd ad) {
               _backLoadingDialog(context);
-              onAdDismissedFullScreenContent?.call(
+              onAdShowedFullScreenContent?.call(
                   ad); //chạy luôn dòng này ở đây thì nó sẽ ko bị nháy lúc tắt ad inter vì khi ad được show lên thì vẫn sẽ chạy app ở dưới (ví dụ: chuyển màn)
               RTLog.d('InterstitialAd showed');
               RTAppManagement.instance.disableResume();
             },
             onAdDismissedFullScreenContent: (InterstitialAd ad) {
-              //onAdDismissedFullScreenContent?.call(ad);
+              onAdDismissedFullScreenContent?.call(ad);
               RTLog.d('InterstitialAd dismissed');
               RTAppManagement.instance.enableResume();
               RTLog.d('enable resume ne');
@@ -196,10 +198,10 @@ class RTInterManager {
         },
         onAdFailedToLoad: (LoadAdError error) {
           RTLog.e('Inter ad failed to load: $error.');
-
           _backLoadingDialog(context);
           onAdFailedToLoad?.call();
           _interstitialAd = null;
+          RTAppManagement.instance.enableResume();
         },
       ),
     );
@@ -207,6 +209,7 @@ class RTInterManager {
 
   _backLoadingDialog(BuildContext context) {
     if (ModalRoute.of(context)?.isCurrent != true) {
+      RTLog.d('Tat loading inter');
       Navigator.of(context).pop();
     }
   }

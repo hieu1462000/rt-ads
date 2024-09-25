@@ -253,7 +253,7 @@ class _RTBannerViewState extends State<RTBannerView> {
   }
 
   reLoad() {
-    RTLog.d("Banner reload : $_isTimeOut");
+    RTLog.d("Banner reload");
     key = UniqueKey();
 
     if (mounted) {
