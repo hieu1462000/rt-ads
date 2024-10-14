@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:rt_ads_plugin/rt_ads_plugin.dart';
+import 'package:rt_ads_plugin/src/rt_inter/rt_inter_loading.dart';
 import 'package:rt_ads_plugin/src/rt_log/rt_log.dart';
 
 class RTOpenManager {
@@ -28,6 +29,104 @@ class RTOpenManager {
   init(String adUnitId) {
     this.adUnitId = adUnitId;
     loadAd();
+  }
+
+  void loadAndShowOpenAd({
+    bool isActive = true,
+    required String adUnitId,
+    Function(AppOpenAd ad)? onAdLoaded,
+    Function(AppOpenAd ad)? onAdDismissedFullScreenContent,
+    Function(AppOpenAd ad, AdError error)? onAdFailedToShowFullScreenContent,
+    Function(AppOpenAd ad)? onAdShowedFullScreenContent,
+    Function()? onAdFailedToLoad,
+    Function(AppOpenAd ad)? onAdClicked,
+    Function(AppOpenAd ad)? onAdImpression,
+    Function(AppOpenAd ad)? onAdWillDismissFullScreenContent,
+    required BuildContext context,
+    Color? loadingIconColor,
+    String? loadingText,
+  }) async {
+    if (isActive == false) {
+      onAdFailedToLoad?.call();
+      return;
+    }
+    var canRequestAds = await RTAppManagement.instance.canRequestAds();
+    if (!canRequestAds) {
+      onAdFailedToLoad?.call();
+      return;
+    }
+    RTAppManagement.instance.disableResume();
+    showDialog(
+      context: context,
+      builder: (context) => WillPopScope(
+        onWillPop: () async => false,
+        child: LoadingAdsInter(
+          loadingIconColor: loadingIconColor,
+          loadingText: loadingText,
+        ),
+      ),
+    );
+    RTLog.d('id resume $adUnitId');
+    AppOpenAd.load(
+      adUnitId: adUnitId,
+      request: const AdRequest(),
+      adLoadCallback: AppOpenAdLoadCallback(
+        onAdLoaded: (ad) {
+          RTLog.d('$ad AdOpen loaded');
+          _appOpenLoadTime = DateTime.now();
+          _appOpenAd = ad;
+          onAdLoaded?.call(ad);
+          _appOpenAd!.fullScreenContentCallback = FullScreenContentCallback(
+            onAdShowedFullScreenContent: (ad) {
+              RTLog.d('$ad AdOpen onAdShowedFullScreenContent');
+              onAdShowedFullScreenContent?.call(ad);
+              RTAppManagement.instance.disableResume();
+            },
+            onAdFailedToShowFullScreenContent: (ad, error) {
+              RTLog.e('$ad AdOpen onAdFailedToShowFullScreenContent: $error');
+              onAdFailedToShowFullScreenContent?.call(ad, error);
+              ad.dispose();
+              _appOpenAd = null;
+            },
+            onAdDismissedFullScreenContent: (ad) {
+              RTLog.d('$ad AdOpen onAdDismissedFullScreenContent');
+              onAdDismissedFullScreenContent?.call(ad);
+              RTAppManagement.instance.enableResume();
+              ad.dispose();
+              _appOpenAd = null;
+              loadAd();
+            },
+            onAdClicked: (ad) {
+              RTLog.d('OpenAd clicked');
+              onAdClicked?.call(ad);
+            },
+            onAdImpression: (ad) {
+              RTLog.d('OpenAd impression');
+              onAdImpression?.call(ad);
+            },
+            onAdWillDismissFullScreenContent: (ad) {
+              RTLog.d('OpenAd will dismiss');
+              onAdWillDismissFullScreenContent?.call(ad);
+            },
+          );
+          _appOpenAd = null;
+          _appOpenAd!.show();
+        },
+        onAdFailedToLoad: (error) {
+          _backLoadingDialog(context);
+          RTLog.e('AppOpenAd failed to load: $error');
+          _appOpenAd = null;
+          onAdFailedToLoad?.call();
+        },
+      ),
+    );
+  }
+
+  _backLoadingDialog(BuildContext context) {
+    if (ModalRoute.of(context)?.isCurrent != true) {
+      RTLog.d('Tat loading inter');
+      Navigator.of(context).pop();
+    }
   }
 
   /// Load an AppOpenAd.
@@ -120,9 +219,7 @@ class _RTOpenViewState extends State<RTOpenView> {
   @override
   void initState() {
     if (widget.isActive == false) return;
-    final rtOpenManager = RTOpenManager()..init(widget.adId);
-    final RTAppLifecycleReactor app = RTAppLifecycleReactor(rtOpenManager: rtOpenManager);
-    app.listenToAppStateChanges();
+    _checkUMP();
     super.initState();
   }
 
