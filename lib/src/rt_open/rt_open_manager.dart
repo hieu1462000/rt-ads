@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:rt_ads_plugin/rt_ads_plugin.dart';
+import 'package:rt_ads_plugin/src/rt_inter/rt_inter_loading.dart';
 import 'package:rt_ads_plugin/src/rt_log/rt_log.dart';
 
 class RTOpenManager {
@@ -96,6 +97,71 @@ class RTOpenManager {
       },
     );
     _appOpenAd!.show();
+  }
+
+  Future<void> loadAndShow(
+    BuildContext context,
+    String adUnitId, {
+    Function? onAdShowedFullScreenContent,
+    Function? onAdFailedToShowFullScreenContent,
+    Function? onAdDismissedFullScreenContent,
+    Color? loadingIconColor,
+    String? loadingText,
+  }) async {
+    // show loading
+    showDialog(
+      context: context,
+      builder: (context) => WillPopScope(
+        onWillPop: () async => false,
+        child: LoadingAdsInter(
+          loadingIconColor: loadingIconColor,
+          loadingText: loadingText,
+        ),
+      ),
+    );
+
+    AppOpenAd.load(
+      adUnitId: adUnitId,
+      request: const AdRequest(),
+      adLoadCallback: AppOpenAdLoadCallback(
+        onAdLoaded: (ad) {
+          RTLog.d('$ad loaded');
+          _backLoadingDialog(context);
+
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdShowedFullScreenContent: (ad) {
+              RTLog.d('$ad onAdShowedFullScreenContent');
+              RTAppManagement.instance.disableResume();
+              onAdShowedFullScreenContent?.call();
+            },
+            onAdFailedToShowFullScreenContent: (ad, error) {
+              RTLog.e('$ad onAdFailedToShowFullScreenContent: $error');
+              ad.dispose();
+
+              onAdFailedToShowFullScreenContent?.call();
+            },
+            onAdDismissedFullScreenContent: (ad) {
+              RTLog.d('$ad onAdDismissedFullScreenContent');
+              RTAppManagement.instance.enableResume();
+              ad.dispose();
+              onAdDismissedFullScreenContent?.call();
+            },
+          );
+
+          ad.show();
+        },
+        onAdFailedToLoad: (error) {
+          RTLog.e('AppOpenAd failed to load: $error');
+          _backLoadingDialog(context);
+        },
+      ),
+    );
+  }
+
+  _backLoadingDialog(BuildContext context) {
+    if (ModalRoute.of(context)?.isCurrent != true) {
+      Navigator.of(context).pop();
+    }
   }
 }
 
