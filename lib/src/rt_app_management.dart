@@ -97,10 +97,11 @@ class RTAppManagement {
     Function(InterstitialAd? ad)? onAdClicked,
     Function(InterstitialAd? ad)? onAdImpression,
     Function(InterstitialAd? ad)? onAdWillDismissFullScreenContent,
+    Function()? onAdNotActiveByRemoteConfig,
   }) async {
     if (isActiveResumeAdsInter == false) {
       RTLog.d("Show Interstitial Ads: Not Active");
-      onAdDismissedFullScreenContent?.call(null);
+      onAdNotActiveByRemoteConfig?.call();
       return;
     }
 
@@ -127,10 +128,11 @@ class RTAppManagement {
     Function(InterstitialAd? ad)? onAdClicked,
     Function(InterstitialAd? ad)? onAdImpression,
     Function(InterstitialAd? ad)? onAdWillDismissFullScreenContent,
+    Function()? onAdNotActiveByRemoteConfig,
   }) async {
     if (isActiveResumeAdsInter == false) {
       RTLog.d("Show Interstitial Ads: Not Active");
-      onAdDismissedFullScreenContent?.call(null);
+      onAdNotActiveByRemoteConfig?.call();
       return;
     }
 

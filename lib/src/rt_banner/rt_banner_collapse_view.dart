@@ -84,7 +84,9 @@ class _RTBannerCollapseViewState extends State<RTBannerCollapseView> {
       if (widget.controller != null) {
         if (!widget.controller!.isPreloadDone) {
           //preload fail
-          _loadBannerAd();
+          if (mounted) {
+            _loadBannerAd();
+          }
         }
         widget.controller!.addListener(() {
           // Reload ads
@@ -106,7 +108,9 @@ class _RTBannerCollapseViewState extends State<RTBannerCollapseView> {
           }
         });
       } else {
-        _loadBannerAd();
+        if (mounted) {
+          _loadBannerAd();
+        }
       }
     } else {
       setState(() {
@@ -168,46 +172,48 @@ class _RTBannerCollapseViewState extends State<RTBannerCollapseView> {
 
   @override
   Widget build(BuildContext context) {
-    return FocusDetector(
-      onVisibilityGained: () {
-        if (widget.isReloadNavigate && canRequestAds) {
-          reLoad();
-        }
-      },
-      onVisibilityLost: () {
-        timer?.cancel();
-      },
-      onFocusLost: () {
-        timer?.cancel();
-      },
-      onForegroundGained: () {
-        if (canRequestAds) {
-          reLoad();
-        }
-      },
-      child: !_isTimeOut
-          ? Column(
-              children: [
-                Container(
-                  color: Colors.black38,
-                  height: 1,
-                ),
-                _isBannerAdReady
-                    ? Container(
-                        width: _bannerAd!.size.width.toDouble(),
-                        height: _bannerAd!.size.height.toDouble(),
-                        alignment: Alignment.bottomCenter,
-                        child: AdWidget(key: key, ad: _bannerAd!),
-                      )
-                    : const RTBannerLoading(),
-                Container(
-                  color: Colors.black38,
-                  height: 1,
-                ),
-              ],
-            )
-          : const SizedBox(),
-    );
+    return widget.isActive
+        ? FocusDetector(
+            onVisibilityGained: () {
+              if (widget.isReloadNavigate && canRequestAds) {
+                reLoad();
+              }
+            },
+            onVisibilityLost: () {
+              timer?.cancel();
+            },
+            onFocusLost: () {
+              timer?.cancel();
+            },
+            onForegroundGained: () {
+              if (canRequestAds) {
+                reLoad();
+              }
+            },
+            child: !_isTimeOut
+                ? Column(
+                    children: [
+                      Container(
+                        color: Colors.black38,
+                        height: 1,
+                      ),
+                      _isBannerAdReady
+                          ? Container(
+                              width: _bannerAd!.size.width.toDouble(),
+                              height: _bannerAd!.size.height.toDouble(),
+                              alignment: Alignment.bottomCenter,
+                              child: AdWidget(key: key, ad: _bannerAd!),
+                            )
+                          : const RTBannerLoading(),
+                      Container(
+                        color: Colors.black38,
+                        height: 1,
+                      ),
+                    ],
+                  )
+                : const SizedBox(),
+          )
+        : const SizedBox();
   }
 
   reLoad() {
@@ -215,7 +221,9 @@ class _RTBannerCollapseViewState extends State<RTBannerCollapseView> {
     _isBannerAdReady = false;
     _isTimeOut = false;
     _bannerAd?.dispose();
-    _loadBannerAd();
+    if (mounted) {
+      _loadBannerAd();
+    }
   }
 
   ///Timer for automatically reload
