@@ -78,11 +78,13 @@ class RTOpenManager {
           onAdLoaded?.call(ad);
           _appOpenAd!.fullScreenContentCallback = FullScreenContentCallback(
             onAdShowedFullScreenContent: (ad) {
+              _backLoadingDialog(context);
               RTLog.d('$ad AdOpen onAdShowedFullScreenContent');
               onAdShowedFullScreenContent?.call(ad);
               RTAppManagement.instance.disableResume();
             },
             onAdFailedToShowFullScreenContent: (ad, error) {
+              _backLoadingDialog(context);
               RTLog.e('$ad AdOpen onAdFailedToShowFullScreenContent: $error');
               onAdFailedToShowFullScreenContent?.call(ad, error);
               ad.dispose();
