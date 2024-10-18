@@ -2,6 +2,7 @@ package com.example.rt_ads_plugin_example
 
 import android.view.LayoutInflater
 import com.example.rt_ads_plugin.RTNative.RTNativeBig
+import com.example.rt_ads_plugin.RTNative.RTNativeFull
 import com.example.rt_ads_plugin.RTNative.RTNativeHuge
 import com.example.rt_ads_plugin.RTNative.RTNativeMedium
 import com.example.rt_ads_plugin.RTNative.RTNativeSmall
@@ -17,5 +18,6 @@ class MainActivity: FlutterActivity() {
         GoogleMobileAdsPlugin.registerNativeAdFactory(flutterEngine, "RTNativeMedium", RTNativeMedium(LayoutInflater.from(context)))
         GoogleMobileAdsPlugin.registerNativeAdFactory(flutterEngine, "RTNativeBig", RTNativeBig(LayoutInflater.from(context)))
         GoogleMobileAdsPlugin.registerNativeAdFactory(flutterEngine, "RTNativeHuge", RTNativeHuge(LayoutInflater.from(context)))
+        GoogleMobileAdsPlugin.registerNativeAdFactory(flutterEngine, "RTNativeFull", RTNativeFull(LayoutInflater.from(context)))
     }
 }

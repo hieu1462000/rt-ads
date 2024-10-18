@@ -2,7 +2,8 @@ enum RTNativeType {
   small,
   medium,
   big,
-  huge;
+  huge,
+  full;
 
   int get height {
     switch (this) {
@@ -14,6 +15,8 @@ enum RTNativeType {
         return 250;
       case RTNativeType.huge:
         return 300;
+      case RTNativeType.full:
+        return 0;
     }
   }
 
@@ -27,6 +30,8 @@ enum RTNativeType {
         return 'RTNativeBig';
       case RTNativeType.huge:
         return 'RTNativeHuge';
+      case RTNativeType.full:
+        return 'RTNativeFull';
     }
   }
 }
