@@ -169,7 +169,6 @@ class RTInterManager {
               onAdDismissedFullScreenContent?.call(ad);
               RTLog.d('InterstitialAd dismissed');
               RTAppManagement.instance.enableResume();
-              RTLog.d('enable resume ne');
               ad.dispose();
             },
             onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
@@ -177,7 +176,6 @@ class RTInterManager {
               _backLoadingDialog(context);
               onAdFailedToShowFullScreenContent?.call(ad, error);
               RTAppManagement.instance.enableResume();
-              RTLog.d('enable resume ne');
               ad.dispose();
             },
             onAdClicked: (ad) {

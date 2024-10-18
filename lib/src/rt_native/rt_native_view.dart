@@ -112,13 +112,13 @@ class _RTNativeViewState extends State<RTNativeView> {
               ? const SizedBox()
               : (_nativeAd != null && !isLoading)
                   ? SizedBox(
-                      height: widget.type.height.toDouble(),
+                      height: widget.type.height == 0 ? MediaQuery.of(context).size.height : widget.type.height.toDouble(),
                       child: AdWidget(
                         key: key,
                         ad: _nativeAd!,
                       ),
                     )
-                  : RTNativeLoading(height: widget.type.height.toDouble()),
+                  : RTNativeLoading(height: widget.type.height == 0 ? MediaQuery.of(context).size.height : widget.type.height.toDouble()),
     );
   }
 
