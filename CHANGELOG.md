@@ -1,3 +1,3 @@
-## 1.0.7
+## 1.1.2
 
-* update inter 
+* update gi do

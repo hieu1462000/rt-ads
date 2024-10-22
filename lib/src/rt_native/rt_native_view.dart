@@ -19,6 +19,7 @@ class RTNativeView extends StatefulWidget {
     this.keyReload,
     this.isActive = true,
     this.style,
+    this.onLoadCallBack,
   });
 
   final bool isReload;
@@ -32,6 +33,8 @@ class RTNativeView extends StatefulWidget {
 
   // cho remote ads
   final bool isActive;
+
+  final Function(bool isLoaded)? onLoadCallBack;
 
   @override
   State<RTNativeView> createState() => _RTNativeViewState();
@@ -66,7 +69,10 @@ class _RTNativeViewState extends State<RTNativeView> {
     }
 
     setState(() {});
-    if (isInternet == false) return;
+    if (isInternet == false) {
+      widget.onLoadCallBack?.call(false);
+      return;
+    }
 
     canRequestAds = await RTAppManagement.instance.canRequestAds();
     if (canRequestAds) {
@@ -140,6 +146,7 @@ class _RTNativeViewState extends State<RTNativeView> {
           isLoading = false;
           setState(() {});
           _setupTimer();
+          widget.onLoadCallBack?.call(true);
         },
         onAdFailedToLoad: (Ad ad, LoadAdError error) {
           RTLog.d('$NativeAd failed to load: $error');
@@ -151,6 +158,7 @@ class _RTNativeViewState extends State<RTNativeView> {
           if (isNext) {
             _setupTimer();
           }
+          widget.onLoadCallBack?.call(false);
         },
       ),
     );
