@@ -126,7 +126,6 @@ class RTOpenManager {
 
   _backLoadingDialog(BuildContext context) {
     if (ModalRoute.of(context)?.isCurrent != true) {
-      RTLog.d('Tat loading inter');
       Navigator.of(context).pop();
     }
   }
