@@ -82,6 +82,17 @@ class _RTBannerViewState extends State<RTBannerView> {
   }
 
   @override
+  void didUpdateWidget(covariant RTBannerView oldWidget) {
+    if (widget.isActive == false) {
+      return;
+    }
+    if (_bannerAd == null) {
+      _checkUMP();
+    }
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
   void didChangeDependencies() {
     if (widget.isActive == false) {
       return;
