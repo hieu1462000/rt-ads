@@ -185,11 +185,11 @@ class _RTBannerCollapseViewState extends State<RTBannerCollapseView> {
             onFocusLost: () {
               timer?.cancel();
             },
-            onForegroundGained: () {
-              if (canRequestAds) {
-                reLoad();
-              }
-            },
+            // onForegroundGained: () {
+            //   if (canRequestAds) {
+            //     reLoad();
+            //   }
+            // },
             child: !_isTimeOut
                 ? Column(
                     children: [
