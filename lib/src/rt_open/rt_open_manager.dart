@@ -66,7 +66,6 @@ class RTOpenManager {
         ),
       ),
     );
-    RTLog.d('id resume $adUnitId');
     AppOpenAd.load(
       adUnitId: adUnitId,
       request: const AdRequest(),
@@ -111,7 +110,6 @@ class RTOpenManager {
               onAdWillDismissFullScreenContent?.call(ad);
             },
           );
-          _appOpenAd = null;
           _appOpenAd!.show();
         },
         onAdFailedToLoad: (error) {
