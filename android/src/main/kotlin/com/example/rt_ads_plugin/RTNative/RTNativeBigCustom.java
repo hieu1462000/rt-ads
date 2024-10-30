@@ -47,17 +47,18 @@ public class RTNativeBigCustom implements GoogleMobileAdsPlugin.NativeAdFactory 
 
         adView.setMediaView(adView.findViewById(R.id.ad_media));
         adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
-        adView.setBodyView(adView.findViewById(R.id.ad_body));
         adView.setCallToActionView(adView.findViewById(R.id.ad_call_to_action));
         adView.setIconView(adView.findViewById(R.id.ad_app_icon));
         adView.setAdvertiserView(adView.findViewById(R.id.ad_advertiser));
 
         int primaryColor = Color.parseColor(customOptions.get("primaryColor").toString());
+        Button button = adView.findViewById(R.id.ad_call_to_action);
         adView.findViewById(R.id.ad_call_to_action).getBackground().setColorFilter(primaryColor, PorterDuff.Mode.SRC_ATOP);
 
         int backgroundColor = Color.parseColor(customOptions.get("backgroundColor").toString());
         int strokeColor = Color.parseColor(customOptions.get("strokeColor").toString());
 
+        View view = adView.findViewById(R.id.native_view);
         adView.findViewById(R.id.native_view).getBackground().setColorFilter(backgroundColor, PorterDuff.Mode.SRC_ATOP);
         //        GradientDrawable drawable = (GradientDrawable)view.getBackground();
 //        drawable.mutate(); // only change this instance of the xml, not all components using this xml
@@ -71,10 +72,11 @@ public class RTNativeBigCustom implements GoogleMobileAdsPlugin.NativeAdFactory 
 //            drawable.getPaint().setColor(primaryColor);
 //        }
 //        button.setBackground(drawable);
-        TextView textView3 = adView.findViewById(R.id.textView3);
-        adView.findViewById(R.id.textView3).getBackground().setColorFilter(primaryColor,PorterDuff.Mode.SRC_ATOP);
-        TextView ad_headline = adView.findViewById(R.id.ad_headline);
-        ad_headline.setTextColor(primaryColor);
+
+//        TextView textView3 = adView.findViewById(R.id.textView3);
+          adView.findViewById(R.id.textView3).getBackground().setColorFilter(primaryColor,PorterDuff.Mode.SRC_ATOP);
+//        TextView ad_headline = adView.findViewById(R.id.ad_headline);
+//        ad_headline.setTextColor(primaryColor);
 
         // The headline and mediaContent are guaranteed to be in every NativeAd.
         ((TextView) Objects.requireNonNull(adView.getHeadlineView())).setText(nativeAd.getHeadline());
@@ -85,12 +87,13 @@ public class RTNativeBigCustom implements GoogleMobileAdsPlugin.NativeAdFactory 
 
         // These assets aren't guaranteed to be in every NativeAd, so it's important to
         // check before trying to display them.
-        if (nativeAd.getBody() == null) {
-            Objects.requireNonNull(adView.getBodyView()).setVisibility(View.INVISIBLE);
-        } else {
-            Objects.requireNonNull(adView.getBodyView()).setVisibility(View.VISIBLE);
-            ((TextView) adView.getBodyView()).setText(nativeAd.getBody());
-        }
+
+//        if (nativeAd.getBody() == null) {
+//            Objects.requireNonNull(adView.getBodyView()).setVisibility(View.INVISIBLE);
+//        } else {
+//            Objects.requireNonNull(adView.getBodyView()).setVisibility(View.VISIBLE);
+//            ((TextView) adView.getBodyView()).setText(nativeAd.getBody());
+//        }
 
         if (nativeAd.getCallToAction() == null) {
             Objects.requireNonNull(adView.getCallToActionView()).setVisibility(View.INVISIBLE);

@@ -56,8 +56,13 @@ public class RTNativeFull implements GoogleMobileAdsPlugin.NativeAdFactory {
         int backgroundColor = Color.parseColor(customOptions.get("backgroundColor").toString());
         int strokeColor = Color.parseColor(customOptions.get("strokeColor").toString());
 
+        adView.findViewById(R.id.native_view).getBackground().setColorFilter(backgroundColor, PorterDuff.Mode.SRC_ATOP);
+
         TextView ad_headline = adView.findViewById(R.id.ad_headline);
         ad_headline.setTextColor(primaryColor);
+
+        TextView textView3 = adView.findViewById(R.id.textView3);
+        textView3.findViewById(R.id.textView3).getBackground().setColorFilter(primaryColor,PorterDuff.Mode.SRC_ATOP);
 
         // The headline and mediaContent are guaranteed to be in every NativeAd.
         ((TextView) Objects.requireNonNull(adView.getHeadlineView())).setText(nativeAd.getHeadline());
@@ -85,8 +90,8 @@ public class RTNativeFull implements GoogleMobileAdsPlugin.NativeAdFactory {
         if (nativeAd.getIcon() == null) {
             adView.getIconView().setVisibility(View.INVISIBLE);
         } else {
-//            ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
-//            adView.getIconView().setVisibility(View.VISIBLE);
+            ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
+            adView.getIconView().setVisibility(View.VISIBLE);
         }
 
         if (adView.getAdvertiserView() != null) {
