@@ -130,7 +130,6 @@ class RTOpenManager {
 
   /// Load an AppOpenAd.
   void loadAd() {
-    RTLog.d('id resume $adUnitId');
     AppOpenAd.load(
       adUnitId: adUnitId,
       request: const AdRequest(),
