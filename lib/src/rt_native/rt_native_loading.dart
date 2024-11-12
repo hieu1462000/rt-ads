@@ -2,6 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:rt_ads_plugin/rt_ads_plugin.dart';
 import 'package:shimmer/shimmer.dart';
 
+/// A widget that displays a loading indicator with shimmer effect.
+///
+/// The [RTNativeLoading] widget is used to show a loading indicator with a shimmer effect when the native ad is loading.
+///
+/// Example usage:
+///
+/// ```dart
+/// RTNativeLoading(height: 100)
+/// ```
 class RTNativeLoading extends StatelessWidget {
   const RTNativeLoading({super.key, required this.height});
   final double height;

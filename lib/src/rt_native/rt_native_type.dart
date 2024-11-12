@@ -1,3 +1,4 @@
+/// Represents the types of RTNative ads.
 enum RTNativeType {
   small,
   medium,
@@ -9,6 +10,7 @@ enum RTNativeType {
   bigCustom3,
   bigCustom4;
 
+  //height of the ad
   int get height {
     switch (this) {
       case RTNativeType.small:
@@ -32,6 +34,7 @@ enum RTNativeType {
     }
   }
 
+  //id of the ad
   String get factoryId {
     switch (this) {
       case RTNativeType.small:
@@ -56,6 +59,7 @@ enum RTNativeType {
   }
 }
 
+/// Enum representing the pre-load status of a native ad in library.
 enum RTNativePreLoadStatus {
   none,
   loading,

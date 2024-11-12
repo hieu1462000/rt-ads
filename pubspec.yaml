@@ -2,7 +2,7 @@ name: rt_ads_plugin
 description: "A custom google_mobile_ads package designed to be user-friendly and optimized for better performance. 
 Developed and maintained by RAWTECH."
 
-version: 1.1.6
+version: 1.1.7
 homepage: https://github.com/hieu1462000/rt-ads
 
 environment:
@@ -18,6 +18,7 @@ dependencies:
   focus_detector_v2: ^3.1.0+1
   connectivity_plus: ^6.0.3
   visibility_detector: ^0.4.0+2
+  facebook_app_events: ^0.19.4
   
 dev_dependencies:
   flutter_test:
