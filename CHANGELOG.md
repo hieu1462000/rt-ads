@@ -1,3 +1,3 @@
-## 1.1.6
+## 1.1.7
 
-* update nhieu thu
+* update fb log sdk

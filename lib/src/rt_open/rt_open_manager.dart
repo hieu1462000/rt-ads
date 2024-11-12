@@ -71,10 +71,14 @@ class RTOpenManager {
       request: const AdRequest(),
       adLoadCallback: AppOpenAdLoadCallback(
         onAdLoaded: (ad) {
+          debugPrint('Mediation $ad loaded: ${ad.responseInfo?.mediationAdapterClassName}');
           RTLog.d('$ad AdOpen loaded');
           _appOpenLoadTime = DateTime.now();
           _appOpenAd = ad;
           onAdLoaded?.call(ad);
+          _appOpenAd?.onPaidEvent = (ad, valueMicros, precision, currencyCode) {
+            RTAppManagement.instance.logPaidAdImpressionToMeta(valueMicros, currencyCode);
+          };
           _appOpenAd!.fullScreenContentCallback = FullScreenContentCallback(
             onAdShowedFullScreenContent: (ad) {
               _backLoadingDialog(context);
@@ -136,8 +140,12 @@ class RTOpenManager {
       adLoadCallback: AppOpenAdLoadCallback(
         onAdLoaded: (ad) {
           RTLog.d('$ad loaded');
+          debugPrint('Mediation $ad loaded: ${ad.responseInfo?.mediationAdapterClassName}');
           _appOpenLoadTime = DateTime.now();
           _appOpenAd = ad;
+          _appOpenAd?.onPaidEvent = (ad, valueMicros, precision, currencyCode) {
+            RTAppManagement.instance.logPaidAdImpressionToMeta(valueMicros, currencyCode);
+          };
         },
         onAdFailedToLoad: (error) {
           RTLog.e('AppOpenAd failed to load: $error');

@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:rt_ads_plugin/src/rt_log/rt_log.dart';
 
+/// Represents the style configuration for a native component in the RTAds library.
 class RTNativeStyle {
   final Color primaryColor;
   final Color backgroundColor;
   final Color strokeColor;
 
-  const RTNativeStyle({required this.primaryColor, required this.backgroundColor, required this.strokeColor});
+  /// Constructs a new instance of [RTNativeStyle] with the specified colors.
+  const RTNativeStyle({
+    required this.primaryColor,
+    required this.backgroundColor,
+    required this.strokeColor,
+  });
 
+  /// Creates a new [RTNativeStyle] instance with the specified color values, replacing any existing values.
+  ///
+  /// If a color value is not provided, the corresponding color value from the original [RTNativeStyle] instance is used.
   RTNativeStyle copyWith({
     Color? primaryColor,
     Color? backgroundColor,
@@ -20,6 +29,9 @@ class RTNativeStyle {
     );
   }
 
+  /// Merges the properties of another [RTNativeStyle] instance into this instance.
+  ///
+  /// If the other instance is null, this instance is returned unchanged.
   RTNativeStyle merge(RTNativeStyle? other) {
     if (other == null) return this;
     return copyWith(
@@ -29,6 +41,10 @@ class RTNativeStyle {
     );
   }
 
+  /// Creates a new [RTNativeStyle] instance from a map of properties.
+  ///
+  /// The map should contain the following keys: 'primaryColor', 'backgroundColor', and 'strokeColor'.
+  /// If a key is missing or the value is null, a default color value is used.
   factory RTNativeStyle.fromMap(Map<String, dynamic> map) {
     return RTNativeStyle(
       primaryColor: map['primaryColor'] ?? Colors.blue,
@@ -37,6 +53,10 @@ class RTNativeStyle {
     );
   }
 
+  /// Converts the [RTNativeStyle] instance to a map of properties.
+  ///
+  /// The map contains the following keys: 'primaryColor', 'backgroundColor', and 'strokeColor'.
+  /// The color values are represented as hexadecimal strings.
   Map<String, Object> toMap() {
     RTLog.d('primaryColor: #${primaryColor.value.toRadixString(16).padLeft(8, '0')}');
     return {
@@ -47,6 +67,7 @@ class RTNativeStyle {
   }
 }
 
+/// Default RTNativeStyle used in the application.
 const RTNativeStyle rtNativeStyleDefault = RTNativeStyle(
   primaryColor: Colors.blue,
   backgroundColor: Colors.white,

@@ -1,3 +1,4 @@
+import 'package:facebook_app_events/facebook_app_events.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -13,6 +14,7 @@ class RTAppManagement {
 
   final Map<String, Pair<RTNativePreLoadStatus, NativeAd?>> _cacheNativeAd = {};
   Map<String, Pair<RTNativePreLoadStatus, NativeAd?>> get cacheNativeAd => _cacheNativeAd;
+  final _facebookAppEvents = FacebookAppEvents();
 
   bool _isEnableResume = true;
   bool isDisableByClick = false;
@@ -258,6 +260,15 @@ class RTAppManagement {
   }
 
   Future<bool> canRequestAds() async {
-    return await RTConsentManager.instance.canRequestAds();
+    final canRequestAds = await RTConsentManager.instance.canRequestAds();
+    RTLog.d('RTADS CAN REQUEST AD: $canRequestAds');
+    return canRequestAds;
+  }
+
+  void logPaidAdImpressionToMeta(double micros, String currencyCode) {
+    try {
+      double revenue = micros / 1000000;
+      _facebookAppEvents.logPurchase(amount: revenue, currency: currencyCode);
+    } catch (_) {}
   }
 }

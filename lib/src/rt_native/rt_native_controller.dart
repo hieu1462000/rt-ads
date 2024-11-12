@@ -2,6 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:rt_ads_plugin/src/rt_log/rt_log.dart';
 
+/// A controller class for managing native ads.
+///
+/// This class provides methods for preloading and reloading native ads,
+/// as well as accessing information about the ad state and ad unit ID.
 class RTNativeController extends ChangeNotifier {
   RTNativeController({required String adUnitId}) : _adUnitId = adUnitId;
 
@@ -11,6 +15,7 @@ class RTNativeController extends ChangeNotifier {
   bool _isPreloadDone = false;
   NativeAd? _nativeAd;
 
+  // Preload ad
   void preLoadAd() {
     if (_nativeAd != null) _nativeAd?.dispose();
     _nativeAd?.dispose();
@@ -42,6 +47,7 @@ class RTNativeController extends ChangeNotifier {
     });
   }
 
+  // Reload ad
   void reloadAd() {
     _isReload = true;
     notifyListeners();
@@ -58,6 +64,7 @@ class RTNativeController extends ChangeNotifier {
 
   get adUnitId => _adUnitId;
 
+  // Set preload done
   setPreLoadDone(bool value) {
     _isPreloadDone = value;
   }
