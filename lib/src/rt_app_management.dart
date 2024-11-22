@@ -220,6 +220,7 @@ class RTAppManagement {
 
   void preLoadNativeAd({
     required String adUnitId,
+    String? lowAdUnitId,
     String keySave = 'default',
     RTNativeType type = RTNativeType.medium,
     Function(NativeAd ad)? onAdLoaded,
@@ -228,7 +229,8 @@ class RTAppManagement {
   }) {
     RTLog.d('Preload Native "$keySave" Start');
     _cacheNativeAd[keySave] = Pair(RTNativePreLoadStatus.loading, null);
-    NativeAd nativeAd = NativeAd(
+    NativeAd? nativeAd;
+    nativeAd = NativeAd(
       adUnitId: adUnitId,
       request: const AdRequest(nonPersonalizedAds: true),
       customOptions: (style ?? _rtNativeStyle).toMap(),
@@ -239,15 +241,36 @@ class RTAppManagement {
           onAdLoaded?.call(ad);
         },
         onAdFailedToLoad: (Ad ad, LoadAdError error) {
-          RTLog.d('Preload "$keySave" failed to load: $error');
-          _cacheNativeAd[keySave] = Pair(RTNativePreLoadStatus.failed, null);
-          onAdFailedToLoad?.call(error);
+          if (lowAdUnitId != null) {
+            //second floor
+            nativeAd = NativeAd(
+              adUnitId: lowAdUnitId,
+              request: const AdRequest(nonPersonalizedAds: true),
+              customOptions: (style ?? _rtNativeStyle).toMap(),
+              listener: NativeAdListener(
+                onAdLoaded: (Ad ad) {
+                  RTLog.d('Preload Native "$keySave" loaded.');
+                  _cacheNativeAd[keySave] = Pair(RTNativePreLoadStatus.loaded, ad as NativeAd);
+                  onAdLoaded?.call(ad);
+                },
+                onAdFailedToLoad: (Ad ad, LoadAdError error) {
+                  RTLog.d('Preload "$keySave" failed to load: $error');
+                  _cacheNativeAd[keySave] = Pair(RTNativePreLoadStatus.failed, null);
+                  onAdFailedToLoad?.call(error);
+                },
+              ),
+            );
+          } else {
+            RTLog.d('Preload "$keySave" failed to load: $error');
+            _cacheNativeAd[keySave] = Pair(RTNativePreLoadStatus.failed, null);
+            onAdFailedToLoad?.call(error);
+          }
         },
       ),
       factoryId: type.factoryId,
     );
 
-    nativeAd.load();
+    nativeAd?.load();
   }
 
   void clearLoadNativeAd(String keySave) {

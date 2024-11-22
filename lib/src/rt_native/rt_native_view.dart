@@ -57,10 +57,12 @@ class RTNativeView extends StatefulWidget {
     this.timeReload = 30,
     this.timeOut = 30,
     required this.adUnitId,
+    this.lowAdUnitId,
     this.type = RTNativeType.medium,
     this.controller,
     this.keyReload,
     this.isActive = true,
+    this.isLowActive,
     this.style,
     this.onLoadCallBack,
   });
@@ -69,13 +71,16 @@ class RTNativeView extends StatefulWidget {
   final int timeReload;
   final int timeOut;
   final String adUnitId;
+  final String? lowAdUnitId;
   final RTNativeType type;
   final RTNativeController? controller;
   final String? keyReload;
   final RTNativeStyle? style;
 
-  // cho remote ads
+  // cho remote ads high
   final bool isActive;
+
+  final bool? isLowActive;
 
   final Function(bool isLoaded)? onLoadCallBack;
 
@@ -92,12 +97,11 @@ class _RTNativeViewState extends State<RTNativeView> {
   bool isInternet = true;
 
   bool canRequestAds = false;
+  String currentAdUnitId = "";
 
   @override
   void initState() {
-    if (widget.isActive == false) {
-      return;
-    }
+    currentAdUnitId = widget.adUnitId;
 
     _checkUMP();
     super.initState();
@@ -137,7 +141,7 @@ class _RTNativeViewState extends State<RTNativeView> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isActive == false) {
+    if (widget.isActive == false && widget.isLowActive != true) {
       return const SizedBox();
     }
 
@@ -174,10 +178,17 @@ class _RTNativeViewState extends State<RTNativeView> {
 
   /// Load ads
   _loadAds(isNext) {
+    currentAdUnitId = widget.adUnitId;
+    if (widget.isActive == false && widget.isLowActive != true) {
+      return;
+    }
+    if (widget.isActive == false && widget.isLowActive == true) {
+      currentAdUnitId = widget.lowAdUnitId!;
+    }
     _nativeAd?.dispose();
     _nativeAd = null;
     _nativeAd ??= NativeAd(
-      adUnitId: widget.adUnitId,
+      adUnitId: currentAdUnitId,
       request: AdRequest(
         nonPersonalizedAds: true,
         httpTimeoutMillis: widget.timeOut * 1000,
@@ -195,7 +206,13 @@ class _RTNativeViewState extends State<RTNativeView> {
           debugPrint('Mediation $ad loaded: ${ad.responseInfo?.mediationAdapterClassName}');
         },
         onAdFailedToLoad: (Ad ad, LoadAdError error) {
-          RTLog.d('$NativeAd failed to load: $error, code: ${error.code}, message: ${error.message}');
+          if (widget.lowAdUnitId != null && widget.isActive == true) {
+            //có ad low và ads high active thi moi load them 1 lan nua ads low
+            _loadAdWithId(currentAdUnitId);
+            return;
+          }
+          RTLog.d('$NativeAd first time failed to load: $error, code: ${error.code}, message: ${error.message}');
+
           isLoading = false;
           _nativeAd?.dispose();
           _nativeAd = null;
@@ -215,6 +232,53 @@ class _RTNativeViewState extends State<RTNativeView> {
     isLoading = true;
     setState(() {});
     _nativeAd!.load();
+  }
+
+  _loadAdWithId(String id) {
+    _nativeAd?.dispose();
+    _nativeAd = null;
+    _nativeAd ??= NativeAd(
+      adUnitId: id,
+      request: AdRequest(
+        nonPersonalizedAds: true,
+        httpTimeoutMillis: widget.timeOut * 1000,
+      ),
+      factoryId: widget.type.factoryId,
+      customOptions: (widget.style ?? RTAppManagement.instance.rtNativeStyle).toMap(),
+      listener: NativeAdListener(
+        onAdLoaded: (Ad ad) {
+          RTLog.d('$NativeAd loaded.');
+          // _nativeAd = ad as NativeAd;
+          isLoading = false;
+          setState(() {});
+          _setupTimer();
+          widget.onLoadCallBack?.call(true);
+          debugPrint('Mediation $ad loaded: ${ad.responseInfo?.mediationAdapterClassName}');
+        },
+        onAdFailedToLoad: (Ad ad, LoadAdError error) {
+          RTLog.d('$NativeAd second time failed to load: $error, code: ${error.code}, message: ${error.message}');
+
+          isLoading = false;
+          _nativeAd?.dispose();
+          _nativeAd = null;
+          setState(() {});
+
+          widget.onLoadCallBack?.call(false);
+        },
+        onPaidEvent: (ad, valueMicros, precision, currencyCode) {
+          RTAppManagement.instance.logPaidAdImpressionToMeta(valueMicros, currencyCode);
+        },
+      ),
+    );
+    isLoading = true;
+    setState(() {});
+    try {
+      _nativeAd!.load();
+    } catch (_) {
+      isLoading = false;
+      setState(() {});
+      widget.onLoadCallBack?.call(false);
+    }
   }
 
   /// Reload ads
