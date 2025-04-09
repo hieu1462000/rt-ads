@@ -35,6 +35,9 @@ class RTRewardedManager {
           _rewardedAd = ad;
           _rewardedAd!.setImmersiveMode(true);
           onAdLoaded?.call(ad);
+          _rewardedAd?.onPaidEvent = (ad, valueMicros, precision, currencyCode) {
+            RTAppManagement.instance.logPaidAdImpressionToMeta(valueMicros, currencyCode);
+          };
         },
         onAdFailedToLoad: (LoadAdError error) {
           RTLog.e('RewardedAd failed to load: $error');
@@ -152,10 +155,14 @@ class RTRewardedManager {
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (RewardedAd ad) {
+          debugPrint('Mediation $ad loaded: ${ad.responseInfo?.mediationAdapterClassName}');
           RTLog.d('RewardedAd loaded.');
           _rewardedAd = ad;
           _rewardedAd!.setImmersiveMode(true);
           if (onAdLoaded != null) onAdLoaded(ad);
+          _rewardedAd?.onPaidEvent = (ad, valueMicros, precision, currencyCode) {
+            RTAppManagement.instance.logPaidAdImpressionToMeta(valueMicros, currencyCode);
+          };
           _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
             onAdShowedFullScreenContent: (RewardedAd ad) {
               RTLog.d('RewardedAd onAdShowedFullScreenContent');

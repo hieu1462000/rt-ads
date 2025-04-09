@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -9,6 +8,29 @@ import 'package:rt_ads_plugin/rt_ads_plugin.dart';
 import 'package:rt_ads_plugin/src/rt_banner/rt_banner_loading.dart';
 import 'package:rt_ads_plugin/src/rt_log/rt_log.dart';
 
+/// A widget that displays a banner ad.
+///
+/// The [RTBannerView] widget is used to display a banner ad in your app. It supports various customization options such as ad unit ID, automatic ad reload, timeout duration, reload on navigation, and more.
+///
+/// To use [RTBannerView], simply provide the required parameters such as [adUnitId], [isReloadPerTime], [timeReloadInSeconds], [timeOutInseconds], and [isReloadNavigate]. You can also provide optional parameters such as [controller], [onAdLoadFinished], [onAdLoaded], [onAdFailedToLoad], [onAdOpened], [onAdClosed], [onAdWillDismissScreen], [onAdImpression], [onPaidEvent], and [onAdClicked].
+///
+/// Example usage:
+///
+/// ```dart
+/// RTBannerView(
+///   adUnitId: 'your_ad_unit_id',
+///   isReloadPerTime: true,
+///   timeReloadInSeconds: 30,
+///   timeOutInseconds: 10,
+///   isReloadNavigate: true,
+///   onAdLoaded: (ad) {
+///     print('Ad loaded: $ad');
+///   },
+///   onAdFailedToLoad: (ad, error) {
+///     print('Failed to load ad: $error');
+///   },
+/// )
+/// ```
 class RTBannerView extends StatefulWidget {
   const RTBannerView({
     super.key,
@@ -82,6 +104,17 @@ class _RTBannerViewState extends State<RTBannerView> {
   }
 
   @override
+  void didUpdateWidget(covariant RTBannerView oldWidget) {
+    if (widget.isActive == false) {
+      return;
+    }
+    if (_bannerAd == null) {
+      _checkUMP();
+    }
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
   void didChangeDependencies() {
     if (widget.isActive == false) {
       return;
@@ -93,9 +126,9 @@ class _RTBannerViewState extends State<RTBannerView> {
     super.didChangeDependencies();
   }
 
+  //check UMP to show ads or not
   void _checkUMP() async {
     canRequestAds = await RTAppManagement.instance.canRequestAds();
-    log('CAN REQUEST AD: $canRequestAds');
     if (canRequestAds) {
       if (widget.controller != null) {
         if (!widget.controller!.isPreloadDone) {
@@ -136,12 +169,12 @@ class _RTBannerViewState extends State<RTBannerView> {
     }
   }
 
+  //load ad
   void _loadBannerAd() async {
     final AnchoredAdaptiveBannerAdSize? size =
         await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(MediaQuery.of(context).size.width.truncate());
 
     if (size == null) {
-      print('Unable to get height of anchored banner.');
       return;
     }
     _bannerAd = BannerAd(
@@ -150,7 +183,8 @@ class _RTBannerViewState extends State<RTBannerView> {
       size: size,
       listener: BannerAdListener(
         onAdLoaded: (ad) {
-          log('ads banner loaded');
+          RTLog.d('Banner loaded');
+          debugPrint('Mediation $ad loaded: ${ad.responseInfo?.mediationAdapterClassName}');
           setState(() {
             _bannerAd = ad as BannerAd;
             _isBannerAdReady = true;
@@ -165,7 +199,7 @@ class _RTBannerViewState extends State<RTBannerView> {
           widget.onAdLoaded?.call(ad);
         },
         onAdFailedToLoad: (ad, err) {
-          log('Failed to load a banner ad: ${err.message}');
+          RTLog.e('Failed to load a banner ad: ${err.message}');
           setState(() {
             _isBannerAdReady = false;
             _isTimeOut = true;
@@ -194,6 +228,7 @@ class _RTBannerViewState extends State<RTBannerView> {
         },
         onPaidEvent: (ad, valueMicros, precision, currencyCode) {
           widget.onPaidEvent?.call(ad, valueMicros, precision, currencyCode);
+          RTAppManagement.instance.logPaidAdImpressionToMeta(valueMicros, currencyCode);
         },
       ),
     );
@@ -217,10 +252,8 @@ class _RTBannerViewState extends State<RTBannerView> {
               timer?.cancel();
             },
             onForegroundGained: () {
-              RTLog.d("vo day tu ngoai app vao ne");
               if (!_isTimeOut) {
                 reLoad();
-                RTLog.d("vo 2 ngoai app vao ne");
               }
             },
             onForegroundLost: () {
@@ -252,6 +285,7 @@ class _RTBannerViewState extends State<RTBannerView> {
         : const SizedBox();
   }
 
+  //reload
   reLoad() {
     RTLog.d("Banner reload");
     key = UniqueKey();
@@ -274,11 +308,6 @@ class _RTBannerViewState extends State<RTBannerView> {
         reLoad();
       }
     });
-    // Future.delayed(Duration(milliseconds: widget.timeReloadInSeconds * 1000), () {
-    //   if (mounted) {
-    //     reLoad();
-    //   }
-    // });
   }
 
   @override
@@ -290,6 +319,10 @@ class _RTBannerViewState extends State<RTBannerView> {
   }
 }
 
+/// A controller for managing a banner ad in the RTBannerView.
+///
+/// The [RTBannerAdController] is responsible for preloading and reloading a banner ad,
+/// as well as keeping track of the ad's loading status and unit ID.
 class RTBannerAdController extends ChangeNotifier {
   RTBannerAdController({required String adUnitId}) : _adUnitId = adUnitId;
 
@@ -299,6 +332,7 @@ class RTBannerAdController extends ChangeNotifier {
   bool _isPreloadDone = false;
   BannerAd? _bannerAd;
 
+  //call this function to preload ads before showing
   void preLoadAd() {
     FlutterView view = WidgetsBinding.instance.platformDispatcher.views.first;
 
@@ -310,12 +344,10 @@ class RTBannerAdController extends ChangeNotifier {
       size: AdSize(width: width.toInt(), height: 60),
       listener: BannerAdListener(
         onAdLoaded: (ad) {
-          log('ads banner preloaded');
           _bannerAd = ad as BannerAd;
           _isPreloadDone = true;
         },
         onAdFailedToLoad: (ad, err) {
-          log('Failed to preload a banner ad: ${err.message}');
           _isPreloadDone = false;
           ad.dispose();
         },
@@ -329,6 +361,7 @@ class RTBannerAdController extends ChangeNotifier {
     });
   }
 
+  //call this function to reload ads
   void reloadAd() {
     _isReload = true;
     notifyListeners();
@@ -345,6 +378,7 @@ class RTBannerAdController extends ChangeNotifier {
 
   get adUnitId => _adUnitId;
 
+  //set preload done
   setPreLoadDone(bool value) {
     _isPreloadDone = value;
   }

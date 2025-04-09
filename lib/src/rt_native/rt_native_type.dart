@@ -1,10 +1,16 @@
+/// Represents the types of RTNative ads.
 enum RTNativeType {
   small,
   medium,
   big,
   huge,
-  full;
+  full,
+  bigCustom1,
+  bigCustom2,
+  bigCustom3,
+  bigCustom4;
 
+  //height of the ad
   int get height {
     switch (this) {
       case RTNativeType.small:
@@ -17,9 +23,18 @@ enum RTNativeType {
         return 300;
       case RTNativeType.full:
         return 0;
+      case RTNativeType.bigCustom1:
+        return 250;
+      case RTNativeType.bigCustom2:
+        return 250;
+      case RTNativeType.bigCustom3:
+        return 250;
+      case RTNativeType.bigCustom4:
+        return 200;
     }
   }
 
+  //id of the ad
   String get factoryId {
     switch (this) {
       case RTNativeType.small:
@@ -32,10 +47,19 @@ enum RTNativeType {
         return 'RTNativeHuge';
       case RTNativeType.full:
         return 'RTNativeFull';
+      case RTNativeType.bigCustom1:
+        return 'RTNativeBigCustom1';
+      case RTNativeType.bigCustom2:
+        return 'RTNativeBigCustom2';
+      case RTNativeType.bigCustom3:
+        return 'RTNativeBigCustom3';
+      case RTNativeType.bigCustom4:
+        return 'RTNativeBigCustom4';
     }
   }
 }
 
+/// Enum representing the pre-load status of a native ad in library.
 enum RTNativePreLoadStatus {
   none,
   loading,

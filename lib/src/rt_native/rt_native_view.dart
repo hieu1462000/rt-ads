@@ -7,17 +7,62 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:rt_ads_plugin/rt_ads_plugin.dart';
 import 'package:rt_ads_plugin/src/rt_log/rt_log.dart';
 
+/// A widget that displays a native ad.
+///
+/// The [RTNativeView] widget is used to display native ads in your application.
+/// It provides options for reloading the ad, setting timeouts, and customizing the ad's style.
+///
+/// Example usage:
+/// ```dart
+/// RTNativeView(
+///   isReload: true,
+///   timeReload: 30,
+///   timeOut: 30,
+///   adUnitId: 'your_ad_unit_id',
+///   type: RTNativeType.medium,
+///   controller: yourController,
+///   keyReload: 'your_key_reload',
+///   isActive: true,
+///   style: yourStyle,
+///   onLoadCallBack: (isLoaded) {
+///     // Handle ad load callback
+///   },
+/// )
+/// ```
 class RTNativeView extends StatefulWidget {
+  /// Creates a [RTNativeView] widget.
+  ///
+  /// The [adUnitId] parameter is required and specifies the ad unit ID for the native ad.
+  ///
+  /// The [isReload] parameter determines whether the ad should be reloaded when the screen is focused.
+  ///
+  /// The [timeReload] parameter specifies the time interval (in seconds) for reloading the ad.
+  ///
+  /// The [timeOut] parameter specifies the timeout (in seconds) for loading the ad.
+  ///
+  /// The [type] parameter specifies the type of native ad to display.
+  ///
+  /// The [controller] parameter is an optional [RTNativeController] that can be used to control the native ad.
+  ///
+  /// The [keyReload] parameter is an optional key used to identify the ad for preloading.
+  ///
+  /// The [isActive] parameter determines whether the ad is active and should be displayed.
+  ///
+  /// The [style] parameter is an optional [RTNativeStyle] that can be used to customize the ad's style.
+  ///
+  /// The [onLoadCallBack] parameter is a callback function that is called when the ad is loaded or failed to load.
   const RTNativeView({
     super.key,
     this.isReload = true,
     this.timeReload = 30,
     this.timeOut = 30,
     required this.adUnitId,
+    this.lowAdUnitId,
     this.type = RTNativeType.medium,
     this.controller,
     this.keyReload,
     this.isActive = true,
+    this.isLowActive,
     this.style,
     this.onLoadCallBack,
   });
@@ -26,13 +71,16 @@ class RTNativeView extends StatefulWidget {
   final int timeReload;
   final int timeOut;
   final String adUnitId;
+  final String? lowAdUnitId;
   final RTNativeType type;
   final RTNativeController? controller;
   final String? keyReload;
   final RTNativeStyle? style;
 
-  // cho remote ads
+  // cho remote ads high
   final bool isActive;
+
+  final bool? isLowActive;
 
   final Function(bool isLoaded)? onLoadCallBack;
 
@@ -49,17 +97,17 @@ class _RTNativeViewState extends State<RTNativeView> {
   bool isInternet = true;
 
   bool canRequestAds = false;
+  String currentAdUnitId = "";
 
   @override
   void initState() {
-    if (widget.isActive == false) {
-      return;
-    }
+    currentAdUnitId = widget.adUnitId;
 
     _checkUMP();
     super.initState();
   }
 
+  /// Check UMP
   void _checkUMP() async {
     // Check internet
     final List<ConnectivityResult> connectivityResult = await (Connectivity().checkConnectivity());
@@ -93,7 +141,7 @@ class _RTNativeViewState extends State<RTNativeView> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isActive == false) {
+    if (widget.isActive == false && widget.isLowActive != true) {
       return const SizedBox();
     }
 
@@ -128,11 +176,19 @@ class _RTNativeViewState extends State<RTNativeView> {
     );
   }
 
+  /// Load ads
   _loadAds(isNext) {
+    currentAdUnitId = widget.adUnitId;
+    if (widget.isActive == false && widget.isLowActive != true) {
+      return;
+    }
+    if (widget.isActive == false && widget.isLowActive == true) {
+      currentAdUnitId = widget.lowAdUnitId!;
+    }
     _nativeAd?.dispose();
     _nativeAd = null;
     _nativeAd ??= NativeAd(
-      adUnitId: widget.adUnitId,
+      adUnitId: currentAdUnitId,
       request: AdRequest(
         nonPersonalizedAds: true,
         httpTimeoutMillis: widget.timeOut * 1000,
@@ -147,9 +203,16 @@ class _RTNativeViewState extends State<RTNativeView> {
           setState(() {});
           _setupTimer();
           widget.onLoadCallBack?.call(true);
+          debugPrint('Mediation $ad loaded: ${ad.responseInfo?.mediationAdapterClassName}');
         },
         onAdFailedToLoad: (Ad ad, LoadAdError error) {
-          RTLog.d('$NativeAd failed to load: $error');
+          if (widget.lowAdUnitId != null && widget.isActive == true) {
+            //có ad low và ads high active thi moi load them 1 lan nua ads low
+            _loadAdWithId(currentAdUnitId);
+            return;
+          }
+          RTLog.d('$NativeAd first time failed to load: $error, code: ${error.code}, message: ${error.message}');
+
           isLoading = false;
           _nativeAd?.dispose();
           _nativeAd = null;
@@ -160,6 +223,9 @@ class _RTNativeViewState extends State<RTNativeView> {
           }
           widget.onLoadCallBack?.call(false);
         },
+        onPaidEvent: (ad, valueMicros, precision, currencyCode) {
+          RTAppManagement.instance.logPaidAdImpressionToMeta(valueMicros, currencyCode);
+        },
       ),
     );
 
@@ -168,6 +234,54 @@ class _RTNativeViewState extends State<RTNativeView> {
     _nativeAd!.load();
   }
 
+  _loadAdWithId(String id) {
+    _nativeAd?.dispose();
+    _nativeAd = null;
+    _nativeAd ??= NativeAd(
+      adUnitId: id,
+      request: AdRequest(
+        nonPersonalizedAds: true,
+        httpTimeoutMillis: widget.timeOut * 1000,
+      ),
+      factoryId: widget.type.factoryId,
+      customOptions: (widget.style ?? RTAppManagement.instance.rtNativeStyle).toMap(),
+      listener: NativeAdListener(
+        onAdLoaded: (Ad ad) {
+          RTLog.d('$NativeAd loaded.');
+          // _nativeAd = ad as NativeAd;
+          isLoading = false;
+          setState(() {});
+          _setupTimer();
+          widget.onLoadCallBack?.call(true);
+          debugPrint('Mediation $ad loaded: ${ad.responseInfo?.mediationAdapterClassName}');
+        },
+        onAdFailedToLoad: (Ad ad, LoadAdError error) {
+          RTLog.d('$NativeAd second time failed to load: $error, code: ${error.code}, message: ${error.message}');
+
+          isLoading = false;
+          _nativeAd?.dispose();
+          _nativeAd = null;
+          setState(() {});
+
+          widget.onLoadCallBack?.call(false);
+        },
+        onPaidEvent: (ad, valueMicros, precision, currencyCode) {
+          RTAppManagement.instance.logPaidAdImpressionToMeta(valueMicros, currencyCode);
+        },
+      ),
+    );
+    isLoading = true;
+    setState(() {});
+    try {
+      _nativeAd!.load();
+    } catch (_) {
+      isLoading = false;
+      setState(() {});
+      widget.onLoadCallBack?.call(false);
+    }
+  }
+
+  /// Reload ads
   reLoad() {
     isLoading = true;
     setState(() {});
@@ -175,6 +289,7 @@ class _RTNativeViewState extends State<RTNativeView> {
     _loadAds(true);
   }
 
+  /// Setup timer
   _setupTimer() {
     // timer?.cancel();
     // timer = Timer.periodic(Duration(seconds: widget.timeReload), (timer) {
@@ -184,6 +299,7 @@ class _RTNativeViewState extends State<RTNativeView> {
     // });
   }
 
+  //check preload ads
   _checkPreload() {
     if (RTAppManagement.instance.cacheNativeAd.containsKey(widget.keyReload ?? "default")) {
       final pair = RTAppManagement.instance.cacheNativeAd[widget.keyReload ?? "default"];

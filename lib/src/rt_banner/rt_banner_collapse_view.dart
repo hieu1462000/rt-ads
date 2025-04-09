@@ -8,6 +8,30 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:rt_ads_plugin/rt_ads_plugin.dart';
 import 'package:rt_ads_plugin/src/rt_banner/rt_banner_loading.dart';
 
+/// A collapsible banner view that displays ads.
+///
+/// The [RTBannerCollapseView] widget is used to display banner ads that can be collapsed.
+/// It provides options for automatically reloading ads, setting timeouts, and handling ad events.
+/// The widget can be controlled using a [RTBannerCollapseAdController].
+///
+/// Example usage:
+/// ```dart
+/// RTBannerCollapseView(
+///   adUnitId: 'your_ad_unit_id',
+///   isReloadPerTime: true,
+///   timeReloadInSeconds: 30,
+///   timeOutInseconds: 10,
+///   isReloadNavigate: true,
+///   controller: yourController,
+///   onAdLoaded: (ad) {
+///     // Handle ad loaded event
+///   },
+///   onAdFailedToLoad: (ad, error) {
+///     // Handle ad failed to load event
+///   },
+///   // Other ad event callbacks...
+/// )
+/// ```
 class RTBannerCollapseView extends StatefulWidget {
   const RTBannerCollapseView({
     super.key,
@@ -78,6 +102,7 @@ class _RTBannerCollapseViewState extends State<RTBannerCollapseView> {
     super.initState();
   }
 
+  ///Check UMP to show ads or not
   void _checkUMP() async {
     canRequestAds = await RTAppManagement.instance.canRequestAds();
     if (canRequestAds) {
@@ -119,6 +144,7 @@ class _RTBannerCollapseViewState extends State<RTBannerCollapseView> {
     }
   }
 
+  ///Load Banner Ad
   void _loadBannerAd() async {
     double width = MediaQuery.sizeOf(context).width;
     _bannerAd = BannerAd(
@@ -185,11 +211,6 @@ class _RTBannerCollapseViewState extends State<RTBannerCollapseView> {
             onFocusLost: () {
               timer?.cancel();
             },
-            onForegroundGained: () {
-              if (canRequestAds) {
-                reLoad();
-              }
-            },
             child: !_isTimeOut
                 ? Column(
                     children: [
@@ -216,6 +237,7 @@ class _RTBannerCollapseViewState extends State<RTBannerCollapseView> {
         : const SizedBox();
   }
 
+  ///Reload Banner Ad
   reLoad() {
     key = UniqueKey();
     _isBannerAdReady = false;
@@ -234,11 +256,6 @@ class _RTBannerCollapseViewState extends State<RTBannerCollapseView> {
         reLoad();
       }
     });
-    // Future.delayed(Duration(milliseconds: widget.timeReloadInSeconds * 1000), () {
-    //   if (mounted) {
-    //     reLoad();
-    //   }
-    // });
   }
 
   @override
@@ -247,16 +264,12 @@ class _RTBannerCollapseViewState extends State<RTBannerCollapseView> {
     //_bannerAd?.dispose();
     super.dispose();
   }
-
-  // @override
-  // void didUpdateWidget(covariant AdBannerCollapseView oldWidget) {
-  //   if (oldWidget.controller != widget.controller) {
-  //     reLoad();
-  //   }
-  //   super.didUpdateWidget(oldWidget);
-  // }
 }
 
+/// Controller for managing the collapse banner ad.
+///
+/// This controller is responsible for preloading and reloading the collapse banner ad,
+/// as well as keeping track of the ad's loading status.
 class RTBannerCollapseAdController extends ChangeNotifier {
   RTBannerCollapseAdController({required String adUnitId}) : _adUnitId = adUnitId;
 
@@ -266,6 +279,7 @@ class RTBannerCollapseAdController extends ChangeNotifier {
   bool _isPreloadDone = false;
   BannerAd? _bannerAd;
 
+  /// Preload a banner collapse ad.
   void preLoadAd() {
     FlutterView view = WidgetsBinding.instance.platformDispatcher.views.first;
 
@@ -296,6 +310,7 @@ class RTBannerCollapseAdController extends ChangeNotifier {
     });
   }
 
+  /// Reload the banner collapse ad.
   void reloadAd() {
     _isReload = true;
     notifyListeners();
@@ -312,6 +327,7 @@ class RTBannerCollapseAdController extends ChangeNotifier {
 
   get adUnitId => _adUnitId;
 
+  /// Set the preload status of the banner collapse ad.
   setPreLoadDone(bool value) {
     _isPreloadDone = value;
   }

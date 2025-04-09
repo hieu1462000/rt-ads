@@ -1,3 +1,4 @@
+import 'package:facebook_app_events/facebook_app_events.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -13,6 +14,7 @@ class RTAppManagement {
 
   final Map<String, Pair<RTNativePreLoadStatus, NativeAd?>> _cacheNativeAd = {};
   Map<String, Pair<RTNativePreLoadStatus, NativeAd?>> get cacheNativeAd => _cacheNativeAd;
+  final _facebookAppEvents = FacebookAppEvents();
 
   bool _isEnableResume = true;
   bool isDisableByClick = false;
@@ -218,6 +220,7 @@ class RTAppManagement {
 
   void preLoadNativeAd({
     required String adUnitId,
+    String? lowAdUnitId,
     String keySave = 'default',
     RTNativeType type = RTNativeType.medium,
     Function(NativeAd ad)? onAdLoaded,
@@ -226,7 +229,8 @@ class RTAppManagement {
   }) {
     RTLog.d('Preload Native "$keySave" Start');
     _cacheNativeAd[keySave] = Pair(RTNativePreLoadStatus.loading, null);
-    NativeAd nativeAd = NativeAd(
+    NativeAd? nativeAd;
+    nativeAd = NativeAd(
       adUnitId: adUnitId,
       request: const AdRequest(nonPersonalizedAds: true),
       customOptions: (style ?? _rtNativeStyle).toMap(),
@@ -237,15 +241,36 @@ class RTAppManagement {
           onAdLoaded?.call(ad);
         },
         onAdFailedToLoad: (Ad ad, LoadAdError error) {
-          RTLog.d('Preload "$keySave" failed to load: $error');
-          _cacheNativeAd[keySave] = Pair(RTNativePreLoadStatus.failed, null);
-          onAdFailedToLoad?.call(error);
+          if (lowAdUnitId != null) {
+            //second floor
+            nativeAd = NativeAd(
+              adUnitId: lowAdUnitId,
+              request: const AdRequest(nonPersonalizedAds: true),
+              customOptions: (style ?? _rtNativeStyle).toMap(),
+              listener: NativeAdListener(
+                onAdLoaded: (Ad ad) {
+                  RTLog.d('Preload Native "$keySave" loaded.');
+                  _cacheNativeAd[keySave] = Pair(RTNativePreLoadStatus.loaded, ad as NativeAd);
+                  onAdLoaded?.call(ad);
+                },
+                onAdFailedToLoad: (Ad ad, LoadAdError error) {
+                  RTLog.d('Preload "$keySave" failed to load: $error');
+                  _cacheNativeAd[keySave] = Pair(RTNativePreLoadStatus.failed, null);
+                  onAdFailedToLoad?.call(error);
+                },
+              ),
+            );
+          } else {
+            RTLog.d('Preload "$keySave" failed to load: $error');
+            _cacheNativeAd[keySave] = Pair(RTNativePreLoadStatus.failed, null);
+            onAdFailedToLoad?.call(error);
+          }
         },
       ),
       factoryId: type.factoryId,
     );
 
-    nativeAd.load();
+    nativeAd?.load();
   }
 
   void clearLoadNativeAd(String keySave) {
@@ -258,6 +283,15 @@ class RTAppManagement {
   }
 
   Future<bool> canRequestAds() async {
-    return await RTConsentManager.instance.canRequestAds();
+    final canRequestAds = await RTConsentManager.instance.canRequestAds();
+    RTLog.d('RTADS CAN REQUEST AD: $canRequestAds');
+    return canRequestAds;
+  }
+
+  void logPaidAdImpressionToMeta(double micros, String currencyCode) {
+    try {
+      double revenue = micros / 1000000;
+      _facebookAppEvents.logPurchase(amount: revenue, currency: currencyCode);
+    } catch (_) {}
   }
 }
