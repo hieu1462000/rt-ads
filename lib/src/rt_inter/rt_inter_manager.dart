@@ -5,6 +5,12 @@ import 'package:rt_ads_plugin/src/rt_app_management.dart';
 import 'package:rt_ads_plugin/src/rt_inter/rt_inter_loading.dart';
 import 'package:rt_ads_plugin/src/rt_log/rt_log.dart';
 
+/// Manages the loading and showing of interstitial ads.
+///
+/// The [RTInterManager] class provides methods to load and show interstitial ads.
+/// It also handles callbacks for various ad events such as ad loaded, ad failed to load,
+/// ad dismissed, ad failed to show, ad showed, ad clicked, ad impression, and ad will dismiss.
+/// The class also includes a method to close the loading dialog.
 class RTInterManager {
   static final RTInterManager instance = RTInterManager._internal();
   factory RTInterManager() => instance;
@@ -12,6 +18,13 @@ class RTInterManager {
 
   InterstitialAd? _interstitialAd;
 
+  /// Loads an interstitial ad.
+  ///
+  /// This method loads an interstitial ad with the specified [adUnitId] and displays it when it's loaded.
+  /// The [context] parameter is required to show the ad.
+  /// The [onAdLoaded] callback is called when the ad is successfully loaded.
+  /// The [onAdFailedToLoad] callback is called when the ad fails to load.
+  /// The [isActive] parameter determines whether the ad should be loaded and shown.
   Future<void> loadInterstitialAd({
     required BuildContext context,
     required String adUnitId,
@@ -19,23 +32,31 @@ class RTInterManager {
     Function(LoadAdError error)? onAdFailedToLoad,
     bool isActive = true,
   }) async {
+    // Check if the ad is active
     if (isActive == false) {
       return;
     }
+
+    // Check if ads can be requested
     var canRequestAds = await RTAppManagement.instance.canRequestAds();
     if (!canRequestAds) {
       return;
     }
 
+    // Load the interstitial ad
     await InterstitialAd.load(
       adUnitId: adUnitId,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (InterstitialAd ad) {
+          debugPrint('Mediation $ad loaded: ${ad.responseInfo?.mediationAdapterClassName}');
           RTLog.d('Inter ad loaded');
           _interstitialAd = ad;
           _interstitialAd!.setImmersiveMode(true);
           if (onAdLoaded != null) onAdLoaded(ad);
+          _interstitialAd?.onPaidEvent = (ad, valueMicros, precision, currencyCode) {
+            RTAppManagement.instance.logPaidAdImpressionToMeta(valueMicros, currencyCode);
+          };
         },
         onAdFailedToLoad: (LoadAdError error) {
           RTLog.e('Inter ad failed to load: ${error.message}');
@@ -47,6 +68,18 @@ class RTInterManager {
     );
   }
 
+  /// Shows an interstitial ad.
+  ///
+  /// This method displays an interstitial ad with the provided parameters.
+  /// It takes a [BuildContext] as a required parameter to show the ad in the correct context.
+  /// The [onAdDismissedFullScreenContent] callback is called when the ad is dismissed.
+  /// The [onAdFailedToShowFullScreenContent] callback is called when the ad fails to show.
+  /// The [onAdShowedFullScreenContent] callback is called when the ad is fully shown.
+  /// The [onAdClicked] callback is called when the ad is clicked.
+  /// The [onAdImpression] callback is called when the ad is being displayed.
+  /// The [onAdWillDismissFullScreenContent] callback is called when the ad is about to be dismissed.
+  /// The [loadingIconColor] parameter sets the color of the loading icon.
+  /// The [loadingText] parameter sets the text to be displayed during the loading process.
   Future<void> showInterstitialAd({
     required BuildContext context,
     Function(InterstitialAd ad)? onAdDismissedFullScreenContent,
@@ -112,6 +145,24 @@ class RTInterManager {
     _interstitialAd = null;
   }
 
+  /// Loads and shows an interstitial ad.
+  ///
+  /// The [adUnitId] parameter specifies the ID of the ad unit to load.
+  /// The [onAdLoaded] callback is called when the ad is loaded successfully.
+  /// The [onAdDismissedFullScreenContent] callback is called when the ad is dismissed after being shown in full screen.
+  /// The [onAdFailedToShowFullScreenContent] callback is called when the ad fails to show in full screen.
+  /// The [onAdShowedFullScreenContent] callback is called when the ad is shown in full screen.
+  /// The [onAdFailedToLoad] callback is called when the ad fails to load.
+  /// The [onAdClicked] callback is called when the ad is clicked.
+  /// The [onAdImpression] callback is called when the ad is displayed on the screen.
+  /// The [onAdWillDismissFullScreenContent] callback is called when the ad is about to be dismissed after being shown in full screen.
+  /// The [context] parameter specifies the build context.
+  /// The [loadingIconColor] parameter specifies the color of the loading icon.
+  /// The [loadingText] parameter specifies the text to display while loading the ad.
+  /// The [isActive] parameter specifies whether the ad is active or not.
+  ///
+  /// Throws an exception if the [adUnitId] is null.
+  /// Throws an exception if the [context] is null.
   void loadAndShowInterstitialAd({
     required String adUnitId,
     Function(InterstitialAd ad)? onAdLoaded,
@@ -153,10 +204,14 @@ class RTInterManager {
       request: const AdRequest(httpTimeoutMillis: 10000),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (InterstitialAd ad) {
+          debugPrint('Mediation $ad loaded: ${ad.responseInfo?.mediationAdapterClassName}');
           RTLog.d('Inter ad loaded');
           _interstitialAd = ad;
           _interstitialAd!.setImmersiveMode(true);
           if (onAdLoaded != null) onAdLoaded(ad);
+          _interstitialAd?.onPaidEvent = (ad, valueMicros, precision, currencyCode) {
+            RTAppManagement.instance.logPaidAdImpressionToMeta(valueMicros, currencyCode);
+          };
           _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
             onAdShowedFullScreenContent: (InterstitialAd ad) {
               _backLoadingDialog(context);
@@ -191,6 +246,7 @@ class RTInterManager {
               onAdWillDismissFullScreenContent?.call(ad);
             },
           );
+
           _interstitialAd!.show();
           _interstitialAd = null;
         },
@@ -205,9 +261,9 @@ class RTInterManager {
     );
   }
 
+  //close loading dialog
   _backLoadingDialog(BuildContext context) {
     if (ModalRoute.of(context)?.isCurrent != true) {
-      RTLog.d('Tat loading inter');
       Navigator.of(context).pop();
     }
   }
