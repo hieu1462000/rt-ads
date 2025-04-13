@@ -294,4 +294,34 @@ class RTAppManagement {
       _facebookAppEvents.logPurchase(amount: revenue, currency: currencyCode);
     } catch (_) {}
   }
+
+  loadAndShowOpenAd({
+    required String adUnitId,
+    required BuildContext context,
+    Function(AppOpenAd ad)? onAdLoaded,
+    Function(AppOpenAd ad)? onAdDismissedFullScreenContent,
+    Function(AppOpenAd ad, AdError error)? onAdFailedToShowFullScreenContent,
+    Function(AppOpenAd ad)? onAdShowedFullScreenContent,
+    Function()? onAdFailedToLoad,
+    Function(AppOpenAd ad)? onAdClicked,
+    Function(AppOpenAd ad)? onAdImpression,
+    Function(AppOpenAd ad)? onAdWillDismissFullScreenContent,
+    Color? loadingIconColor,
+    String? loadingText,
+  }) {
+    RTOpenManager.instance.loadAndShowOpenAd(
+      adUnitId: adUnitId,
+      context: context,
+      onAdLoaded: onAdLoaded,
+      onAdDismissedFullScreenContent: onAdDismissedFullScreenContent,
+      onAdFailedToShowFullScreenContent: onAdFailedToShowFullScreenContent,
+      onAdShowedFullScreenContent: onAdShowedFullScreenContent,
+      onAdFailedToLoad: onAdFailedToLoad,
+      onAdClicked: onAdClicked,
+      onAdImpression: onAdImpression,
+      onAdWillDismissFullScreenContent: onAdWillDismissFullScreenContent,
+      loadingIconColor: loadingIconColor,
+      loadingText: loadingText,
+    );
+  }
 }

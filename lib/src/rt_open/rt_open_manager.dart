@@ -5,10 +5,10 @@ import 'package:rt_ads_plugin/src/rt_inter/rt_inter_loading.dart';
 import 'package:rt_ads_plugin/src/rt_log/rt_log.dart';
 
 class RTOpenManager {
-  static final RTOpenManager _instance = RTOpenManager._internal();
+  static final RTOpenManager instance = RTOpenManager._internal();
 
   factory RTOpenManager() {
-    return _instance;
+    return instance;
   }
 
   RTOpenManager._internal();
