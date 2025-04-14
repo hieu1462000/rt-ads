@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.view.ViewGroup;
 
 import com.example.rt_ads_plugin.R;
 import com.google.android.gms.ads.formats.MediaView;
@@ -36,13 +37,54 @@ public class RTNativeSmall implements GoogleMobileAdsPlugin.NativeAdFactory {
 
     @Override
     public NativeAdView createNativeAd(NativeAd nativeAd, Map<String, Object> customOptions) {
-        @SuppressLint("InflateParams") final NativeAdView adView = (NativeAdView) layoutInflater.inflate(R.layout.rt_native_small_view, null);
+        // Sử dụng ViewGroup.LayoutParams để đảm bảo layout đúng
+        ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        
+        @SuppressLint("InflateParams") 
+        final NativeAdView adView = (NativeAdView) layoutInflater.inflate(R.layout.rt_native_small_view, null);
+        adView.setLayoutParams(params);
 
+        // Đảm bảo các view được set đúng layout params
+        View mediaView = adView.findViewById(R.id.ad_media);
+        if (mediaView != null) {
+            mediaView.setLayoutParams(new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ));
+            adView.setMediaView((MediaView) mediaView);
+        }
 
-        adView.setMediaView(adView.findViewById(R.id.ad_media));
-        adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
-        adView.setBodyView(adView.findViewById(R.id.ad_body));
-        adView.setCallToActionView(adView.findViewById(R.id.ad_call_to_action));
+        // Set các view khác với layout params phù hợp
+        View headlineView = adView.findViewById(R.id.ad_headline);
+        if (headlineView != null) {
+            headlineView.setLayoutParams(new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ));
+            adView.setHeadlineView(headlineView);
+        }
+
+        View bodyView = adView.findViewById(R.id.ad_body);
+        if (bodyView != null) {
+            bodyView.setLayoutParams(new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ));
+            adView.setBodyView(bodyView);
+        }
+
+        View callToActionView = adView.findViewById(R.id.ad_call_to_action);
+        if (callToActionView != null) {
+            callToActionView.setLayoutParams(new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ));
+            adView.setCallToActionView(callToActionView);
+        }
+
         adView.setIconView(adView.findViewById(R.id.ad_app_icon));
         adView.setAdvertiserView(adView.findViewById(R.id.ad_advertiser));
 
@@ -102,12 +144,15 @@ public class RTNativeSmall implements GoogleMobileAdsPlugin.NativeAdFactory {
             }
         }
 
-
-
-
-        // This method tells the Google Mobile Ads SDK that you have finished populating your
-        // native ad view with this native ad.
+        // Đảm bảo native ad được set sau khi tất cả view đã được cấu hình
         adView.setNativeAd(nativeAd);
+
+        // Force layout để đảm bảo tất cả view được measure và layout
+        adView.measure(
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        );
+        adView.layout(0, 0, adView.getMeasuredWidth(), adView.getMeasuredHeight());
 
         return adView;
     }

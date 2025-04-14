@@ -1,5 +1,6 @@
 export 'rt_app_management.dart';
 export 'rt_banner/rt_banner_collapse_view.dart';
+export 'rt_banner/rt_banner_scaffold_view.dart';
 export 'rt_banner/rt_banner_view.dart';
 export 'rt_consent/rt_consent_manager.dart';
 export 'rt_inter/rt_inter_manager.dart';
