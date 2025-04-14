@@ -95,6 +95,7 @@ class _RTNativeViewState extends State<RTNativeView> {
   Timer? timer;
   UniqueKey key = UniqueKey();
   bool isInternet = true;
+  bool isAdReady = false;
 
   bool canRequestAds = false;
   String currentAdUnitId = "";
@@ -147,9 +148,6 @@ class _RTNativeViewState extends State<RTNativeView> {
 
     return FocusDetector(
       onFocusGained: () {
-        // tôi muốn chỉ bắt sự kiện chuyển màn hình và thoát app vào lại
-        // để load lại ads
-
         if (widget.isReload && isInit == false && canRequestAds && RTAppManagement.instance.isLastNavigator == true) {
           key = UniqueKey();
           _loadAds(true);
@@ -164,7 +162,7 @@ class _RTNativeViewState extends State<RTNativeView> {
           ? const SizedBox()
           : (isLoading == false && _nativeAd == null)
               ? const SizedBox()
-              : (_nativeAd != null && !isLoading)
+              : (_nativeAd != null && !isLoading && isAdReady)
                   ? SizedBox(
                       height: widget.type.height == 0 ? MediaQuery.of(context).size.height : widget.type.height.toDouble(),
                       child: AdWidget(
@@ -187,6 +185,7 @@ class _RTNativeViewState extends State<RTNativeView> {
     }
     _nativeAd?.dispose();
     _nativeAd = null;
+    isAdReady = false;
     _nativeAd ??= NativeAd(
       adUnitId: currentAdUnitId,
       request: AdRequest(
@@ -198,8 +197,8 @@ class _RTNativeViewState extends State<RTNativeView> {
       listener: NativeAdListener(
         onAdLoaded: (Ad ad) {
           RTLog.d('$NativeAd loaded.');
-          // _nativeAd = ad as NativeAd;
           isLoading = false;
+          isAdReady = true;
           setState(() {});
           _setupTimer();
           widget.onLoadCallBack?.call(true);
@@ -248,8 +247,8 @@ class _RTNativeViewState extends State<RTNativeView> {
       listener: NativeAdListener(
         onAdLoaded: (Ad ad) {
           RTLog.d('$NativeAd loaded.');
-          // _nativeAd = ad as NativeAd;
           isLoading = false;
+          isAdReady = true;
           setState(() {});
           _setupTimer();
           widget.onLoadCallBack?.call(true);
